@@ -29,27 +29,19 @@ const MAP_DATA = {
             ]
         },
 
-        // Camino inicial de tierra
-        {
-            type: "dirt",
-            points: [
-                [75, 40],
-                [70, 37],
-                [58, 33],
-                [45, 29],
-                [32, 25],
-                [23, 22],
-                [18, 20],
-                [15, 18],
-                [12, 17],
-                [10, 20],
-                [17, 24],
-                [31, 29],
-                [46, 34],
-                [62, 39],
-                [74, 43]
-            ]
-        },
+       
+// Camino inicial de tierra: diagonal uniforme
+{
+    type: "dirt",
+    points: [
+        [76, 40],
+        [75, 43],
+        [72, 43],
+        [15, 22],
+        [17, 19]
+    ]
+},
+
 
         // Zona de cemento
         {
