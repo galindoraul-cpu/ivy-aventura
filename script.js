@@ -10,8 +10,8 @@ const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
 const TILE = 32;
-const MAP_W = 60;
-const MAP_H = 45;
+const MAP_W = MAP_DATA.width;
+const MAP_H = MAP_DATA.height;
 
 const WORLD_W = MAP_W * TILE;
 const WORLD_H = MAP_H * TILE;
@@ -165,6 +165,50 @@ function drawGround() {
                 ctx.fillRect(px + 5, py + 5, 4, 3);
             }
         }
+    }
+}
+
+// =========================================
+// 4.1. TERRENO DEL MAPA DEFINITIVO
+// =========================================
+
+function drawMapTerrain() {
+
+    for (const area of MAP_DATA.terrain) {
+
+        const points = area.points;
+
+        if (!points || points.length < 3) continue;
+
+        ctx.beginPath();
+
+        points.forEach((point, index) => {
+
+            const x = point[0] * TILE - camera.x;
+            const y = point[1] * TILE - camera.y;
+
+            if (index === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+
+        });
+
+        ctx.closePath();
+
+        ctx.fillStyle = MAP_DATA.colors[area.type];
+        ctx.fill();
+
+        // Borde sutil para distinguir las superficies
+        ctx.strokeStyle = area.type === "dirt"
+            ? "#a98260"
+            : area.type === "concrete"
+                ? "#99968e"
+                : "#568b46";
+
+        ctx.lineWidth = 2;
+        ctx.stroke();
     }
 }
 
@@ -402,6 +446,8 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     drawGround();
+    drawMapTerrain();
+
     drawTrees();
     drawBuildings();
     drawIvy();
