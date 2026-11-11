@@ -20,39 +20,67 @@ const MAP_DATA = {
     },
 
     // Áreas de terreno
-    terrain: [
-        {
-            type: "grass",
-            points: [
-                [0, 0], [80, 0],
-                [80, 44], [0, 44]
-            ]
-        },
+  
+terrain: [
 
-       
-// Camino inicial de tierra: diagonal uniforme
-{
-    type: "dirt",
-    points: [
-        [76, 40],
-        [75, 43],
-        [72, 43],
-        [15, 22],
-        [17, 19]
-    ]
-},
+    // 1. Superficie general de áreas verdes
+    {
+        type: "grass",
+        points: [
+            [0, 0],
+            [80, 0],
+            [80, 44],
+            [0, 44]
+        ]
+    },
 
+    // 2. Camino de tierra desde el acceso inferior derecho
+    {
+        type: "dirt",
+        points: [
+            [76, 39],
+            [75, 43],
+            [40, 31],
+            [42, 27]
+        ]
+    },
 
-        // Zona de cemento
-        {
-            type: "concrete",
-            points: [
-                [10, 11], [48, 11],
-                [48, 25], [42, 29],
-                [24, 23], [10, 19]
-            ]
-        }
-    ],
+    // 3. Continuación de cemento hacia las mesitas izquierdas
+    {
+        type: "concrete",
+        points: [
+            [42, 27],
+            [40, 31],
+            [15, 21],
+            [17, 18]
+        ]
+    },
+
+    // 4. Camino de cemento en el giro hacia los laboratorios
+    {
+        type: "concrete",
+        points: [
+            [48, 31],
+            [44, 29],
+            [47, 23],
+            [51, 24],
+            [52, 29]
+        ]
+    },
+
+    // 5. Conexión de cemento hacia el pasillo
+    {
+        type: "concrete",
+        points: [
+            [47, 23],
+            [51, 24],
+            [54, 20],
+            [51, 18]
+        ]
+    }
+
+],
+
 
     // Edificios: posiciones iniciales aproximadas
     buildings: [
