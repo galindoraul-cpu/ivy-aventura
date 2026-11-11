@@ -22,7 +22,7 @@ const keys = {};
 
 const ivy = {
     x: 29 * TILE,
-    y: 39 * TILE,
+    y: 42 * TILE,
     speed: 3,
     direction: "down",
     moving: false,
@@ -308,32 +308,36 @@ function drawIvy() {
 // 8. MOVIMIENTO
 // =========================================
 
+
 function moveIvy() {
     let dx = 0;
     let dy = 0;
 
-    if (keys["ArrowUp"] || keys["w"]) {
+    // Detectar movimiento vertical
+    if (keys["arrowup"] || keys["w"]) {
         dy = -ivy.speed;
         ivy.direction = "up";
     }
 
-    if (keys["ArrowDown"] || keys["s"]) {
+    if (keys["arrowdown"] || keys["s"]) {
         dy = ivy.speed;
         ivy.direction = "down";
     }
 
-    if (keys["ArrowLeft"] || keys["a"]) {
+    // Detectar movimiento horizontal
+    if (keys["arrowleft"] || keys["a"]) {
         dx = -ivy.speed;
         ivy.direction = "left";
     }
 
-    if (keys["ArrowRight"] || keys["d"]) {
+    if (keys["arrowright"] || keys["d"]) {
         dx = ivy.speed;
         ivy.direction = "right";
     }
 
     ivy.moving = dx !== 0 || dy !== 0;
 
+    // Evitar que Ivy camine más rápido en diagonal
     if (dx !== 0 && dy !== 0) {
         dx *= 0.707;
         dy *= 0.707;
@@ -344,24 +348,29 @@ function moveIvy() {
     const nextX = ivy.x + dx;
     const nextY = ivy.y + dy;
 
-    // Colisión horizontal
+    // Comprobar colisiones horizontales
     if (
+        dx !== 0 &&
         !isBlocked(nextX - radius, ivy.y) &&
         !isBlocked(nextX + radius, ivy.y)
     ) {
         ivy.x = nextX;
     }
 
-    // Colisión vertical
+    // Comprobar colisiones verticales
     if (
+        dy !== 0 &&
         !isBlocked(ivy.x, nextY - radius) &&
         !isBlocked(ivy.x, nextY + radius)
     ) {
         ivy.y = nextY;
     }
 
-    if (ivy.moving) ivy.frame++;
+    if (ivy.moving) {
+        ivy.frame++;
+    }
 }
+
 
 // =========================================
 // 9. CÁMARA
