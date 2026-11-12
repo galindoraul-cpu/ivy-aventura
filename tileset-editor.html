@@ -1,1 +1,196 @@
-a
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>IVY - Editor de Tilesets</title>
+
+    <link rel="stylesheet" href="tileset-editor.css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div>
+            <h1>IVY - TILESET EDITOR</h1>
+            <p>Herramienta de construcción de escenarios</p>
+        </div>
+
+        <a href="index.html" class="back-button">
+            Volver al videojuego
+        </a>
+    </header>
+
+    <main class="editor">
+
+        <section class="toolbar">
+
+            <div class="control-group">
+                <label for="tilesetSelect">Tileset</label>
+
+                <select id="tilesetSelect">
+                    <option value="exterior">Exterior</option>
+                    <option value="general">General</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="tileSize">Tamaño del tile</label>
+
+                <select id="tileSize">
+                    <option value="16">16 × 16 px</option>
+                    <option value="32">32 × 32 px</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="zoom">Ampliación</label>
+
+                <select id="zoom">
+                    <option value="2">200%</option>
+                    <option value="3" selected>300%</option>
+                    <option value="4">400%</option>
+                    <option value="5">500%</option>
+                    <option value="6">600%</option>
+                </select>
+            </div>
+
+            <label class="grid-control">
+                <input type="checkbox" id="showGrid" checked>
+                Mostrar cuadrícula
+            </label>
+
+        </section>
+
+        <section class="workspace">
+
+            <div class="sheet-panel">
+
+                <div class="panel-heading">
+                    <h2>Imagen del tileset</h2>
+                    <span id="imageDimensions">Cargando...</span>
+                </div>
+
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="tilesetCanvas"></canvas>
+                </div>
+
+            </div>
+
+            <aside class="selection-panel">
+
+                <h2>Elemento seleccionado</h2>
+
+                <div class="preview-container">
+                    <canvas id="previewCanvas"></canvas>
+                </div>
+
+                <div class="selection-data">
+
+                    <p id="selectedStatus">
+                        Selecciona un tile de la imagen
+                    </p>
+
+                    <div class="data-row">
+                        <span>Columna</span>
+                        <strong id="tileColumn">-</strong>
+                    </div>
+
+                    <div class="data-row">
+                        <span>Fila</span>
+                        <strong id="tileRow">-</strong>
+                    </div>
+
+                    <div class="data-row">
+                        <span>Coordenadas X</span>
+                        <strong id="tileX">-</strong>
+                    </div>
+
+                    <div class="data-row">
+                        <span>Coordenadas Y</span>
+                        <strong id="tileY">-</strong>
+                    </div>
+
+                    <div class="data-row">
+                        <span>Tamaño</span>
+                        <strong id="tileDimensions">-</strong>
+                    </div>
+
+                </div>
+
+                <button id="copyCoordinates">
+                    Copiar coordenadas
+                </button>
+
+            </aside>
+
+        </section>
+
+        <section class="palette-panel">
+
+            <h2>Paleta de colores de la preparatoria</h2>
+
+            <p>
+                Colores de referencia para nuestra futura
+                transformación gráfica.
+            </p>
+
+            <div class="palette">
+
+                <div class="color-item">
+                    <span style="background:#D9C69C"></span>
+                    <small>Beige</small>
+                </div>
+
+                <div class="color-item">
+                    <span style="background:#B9A47D"></span>
+                    <small>Beige oscuro</small>
+                </div>
+
+                <div class="color-item">
+                    <span style="background:#55BFAE"></span>
+                    <small>Turquesa</small>
+                </div>
+
+                <div class="color-item">
+                    <span style="background:#338F83"></span>
+                    <small>Turquesa oscuro</small>
+                </div>
+
+                <div class="color-item">
+                    <span style="background:#77B7C3"></span>
+                    <small>Ventanas</small>
+                </div>
+
+                <div class="color-item">
+                    <span style="background:#80B95D"></span>
+                    <small>Pasto</small>
+                </div>
+
+                <div class="color-item">
+                    <span style="background:#A9A69E"></span>
+                    <small>Cemento</small>
+                </div>
+
+                <div class="color-item">
+                    <span style="background:#B99470"></span>
+                    <small>Tierra</small>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer>
+        IVY: UNA AVENTURA DE CUATRO RECUERDOS
+    </footer>
+
+    <script src="tileset-editor.js"></script>
+
+</body>
+</html>
+
