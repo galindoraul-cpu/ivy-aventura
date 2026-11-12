@@ -18,6 +18,43 @@ const WORLD_H = MAP_H * TILE;
 
 const camera = { x: 0, y: 0 };
 
+// =========================================
+// SISTEMA DE TILESETS
+// =========================================
+
+const tilesets = {
+    exterior: new Image(),
+    general: new Image()
+};
+
+let tilesetsLoaded = 0;
+let showTilesetPreview = false;
+
+function onTilesetLoaded() {
+    tilesetsLoaded++;
+
+    console.log(
+        "Tileset cargado correctamente:",
+        tilesetsLoaded,
+        "/ 2"
+    );
+}
+
+tilesets.exterior.onload = onTilesetLoaded;
+tilesets.general.onload = onTilesetLoaded;
+
+tilesets.exterior.onerror = () => {
+    console.error("No se pudo cargar tileset-exterior.png.png");
+};
+
+tilesets.general.onerror = () => {
+    console.error("No se pudo cargar tileset-general.png.png");
+};
+
+// Cargar imágenes desde GitHub Pages
+tilesets.exterior.src = "assets/tilesets/tileset-exterior.png.png";
+tilesets.general.src = "assets/tilesets/tileset-general.png.png";
+
 const keys = {};
 
 const ivy = {
@@ -436,6 +473,49 @@ function updateCamera() {
 }
 
 // =========================================
+// VISTA DE COMPROBACIÓN DE TILESETS
+// =========================================
+
+function drawTilesetPreview() {
+
+    if (!showTilesetPreview) return;
+
+    const images = [
+        {
+            image: tilesets.exterior,
+            label: "TILESET EXTERIOR"
+        },
+        {
+            image: tilesets.general,
+            label: "TILESET GENERAL"
+        }
+    ];
+
+    images.forEach((item, index) => {
+
+        if (!item.image.complete || item.image.naturalWidth === 0) {
+            return;
+        }
+
+        const x = 12 + index * 145;
+        const y = 12;
+
+        ctx.fillStyle = "#172b25";
+        ctx.fillRect(x - 5, y - 5, 140, 350);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "10px monospace";
+        ctx.fillText(item.label, x, y + 12);
+
+        ctx.drawImage(
+            item.image,
+            x,
+            y + 20
+        );
+    });
+}
+
+// =========================================
 // 10. BUCLE PRINCIPAL
 // =========================================
 
@@ -449,8 +529,10 @@ function gameLoop() {
     drawMapTerrain();
 
     drawTrees();
-    drawBuildings();
-    drawIvy();
+drawBuildings();
+drawIvy();
+
+drawTilesetPreview();
 
     requestAnimationFrame(gameLoop);
 }
@@ -461,7 +543,9 @@ function gameLoop() {
 
 window.addEventListener("keydown", (e) => {
     const key = e.key.toLowerCase();
-
+if (key === "t" && !keys[key]) {
+    showTilesetPreview = !showTilesetPreview;
+}
     if (
         ["arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)
     ) {
