@@ -44,16 +44,16 @@ tilesets.exterior.onload = onTilesetLoaded;
 tilesets.general.onload = onTilesetLoaded;
 
 tilesets.exterior.onerror = () => {
-    console.error("No se pudo cargar tileset-exterior.png.png");
+    console.error("No se pudo cargar tileset-exterior.png");
 };
 
 tilesets.general.onerror = () => {
-    console.error("No se pudo cargar tileset-general.png.png");
+    console.error("No se pudo cargar tileset-general.png");
 };
 
 // Cargar imágenes desde GitHub Pages
-tilesets.exterior.src = "assets/tilesets/tileset-exterior.png.png";
-tilesets.general.src = "assets/tilesets/tileset-general.png.png";
+tilesets.exterior.src = "assets/tilesets/tileset-exterior.png";
+tilesets.general.src = "assets/tilesets/tileset-general.png";
 
 const keys = {};
 
