@@ -241,3 +241,23 @@ footer {
         gap: 15px;
     }
 }
+
+.control-group input[type="number"] {
+    width: 130px;
+    padding: 9px;
+    background: #17231f;
+    color: white;
+    border: 1px solid #527568;
+    border-radius: 5px;
+}
+
+#tilesetCanvas {
+    touch-action: none;
+    user-select: none;
+}
+
+#previewCanvas {
+    image-rendering: pixelated;
+    object-fit: contain;
+}
+
