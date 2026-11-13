@@ -261,3 +261,51 @@ footer {
     object-fit: contain;
 }
 
+.catalog-tools {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid #527568;
+}
+
+.catalog-tools h2 {
+    font-size: 16px;
+    margin-bottom: 14px;
+}
+
+.catalog-tools input,
+.catalog-tools select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #17231f;
+    color: white;
+    border: 1px solid #527568;
+    border-radius: 5px;
+}
+
+#assetList {
+    margin-top: 18px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.asset-entry {
+    padding: 11px;
+    margin-bottom: 8px;
+    background: #17231f;
+    border: 1px solid #40554b;
+    border-radius: 5px;
+}
+
+.asset-entry strong {
+    display: block;
+    color: #79d7c6;
+    margin-bottom: 5px;
+}
+
+.asset-entry small {
+    color: #a9c4b5;
+    display: block;
+    line-height: 1.6;
+}
+
