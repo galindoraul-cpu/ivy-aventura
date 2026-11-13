@@ -1,8 +1,12 @@
 
 /* =========================================
-   IVY - TILESET EDITOR
-   Visor y selector de elementos gráficos
+   IVY - TILESET EDITOR 2.0
+   Selección rectangular de sprites
 ========================================= */
+
+// =========================================
+// 1. CANVAS
+// =========================================
 
 const canvas = document.getElementById("tilesetCanvas");
 const ctx = canvas.getContext("2d");
@@ -14,16 +18,18 @@ ctx.imageSmoothingEnabled = false;
 previewCtx.imageSmoothingEnabled = false;
 
 // =========================================
-// 1. CARGAR TILESETS
+// 2. TILESETS
 // =========================================
 
 const tilesets = {
     exterior: new Image(),
-    general: new Image()
+    general: new Image(),
+    buildings: new Image()
 };
 
 tilesets.exterior.src = "assets/tilesets/tileset-exterior.png";
 tilesets.general.src = "assets/tilesets/tileset-general.png";
+tilesets.buildings.src = "assets/tilesets/tileset-edificios.jpg";
 
 let currentTileset = "exterior";
 let currentImage = null;
@@ -32,16 +38,22 @@ let tileSize = 16;
 let zoom = 3;
 let showGrid = true;
 
-let selectedTile = null;
+// Selección libre
+let selection = null;
+let dragging = false;
+let dragStart = null;
 
 // =========================================
-// 2. ELEMENTOS HTML
+// 3. ELEMENTOS HTML
 // =========================================
 
 const tilesetSelect = document.getElementById("tilesetSelect");
 const tileSizeSelect = document.getElementById("tileSize");
 const zoomSelect = document.getElementById("zoom");
 const gridCheckbox = document.getElementById("showGrid");
+
+const widthInput = document.getElementById("selectionWidth");
+const heightInput = document.getElementById("selectionHeight");
 
 const imageDimensions = document.getElementById("imageDimensions");
 
@@ -53,54 +65,68 @@ const tileY = document.getElementById("tileY");
 const tileDimensions = document.getElementById("tileDimensions");
 
 // =========================================
-// 3. CARGA Y SELECCIÓN DE IMAGEN
+// 4. CARGAR IMAGEN
 // =========================================
 
 function loadTileset() {
 
     currentImage = tilesets[currentTileset];
 
+    selection = null;
+
     if (!currentImage.complete || !currentImage.naturalWidth) {
+
+        selectedStatus.textContent = "Cargando imagen...";
+
+        imageDimensions.textContent = "Cargando...";
+
         currentImage.onload = () => {
-            renderEditor();
+            if (currentImage === tilesets[currentTileset]) {
+                finishLoading();
+            }
         };
 
         currentImage.onerror = () => {
             selectedStatus.textContent =
-                "Error al cargar el tileset";
+                "No se pudo cargar la imagen";
+
+            imageDimensions.textContent = "Error de carga";
+
+            console.error("Error al cargar:", currentImage.src);
         };
+
+        clearSelection();
 
         return;
     }
 
-    selectedTile = null;
+    finishLoading();
+}
+
+function finishLoading() {
+
+    canvas.width = currentImage.naturalWidth;
+    canvas.height = currentImage.naturalHeight;
 
     imageDimensions.textContent =
-        `${currentImage.naturalWidth} × ${currentImage.naturalHeight} px`;
+        `${canvas.width} × ${canvas.height} px`;
 
     clearSelection();
-
     renderEditor();
 }
 
 // =========================================
-// 4. DIBUJAR IMAGEN Y CUADRÍCULA
+// 5. DIBUJAR EDITOR
 // =========================================
 
 function renderEditor() {
 
     if (!currentImage || !currentImage.complete) return;
 
-    const width = currentImage.naturalWidth;
-    const height = currentImage.naturalHeight;
+    canvas.style.width = `${canvas.width * zoom}px`;
+    canvas.style.height = `${canvas.height * zoom}px`;
 
-    canvas.width = width;
-    canvas.height = height;
-
-    canvas.style.width = `${width * zoom}px`;
-    canvas.style.height = `${height * zoom}px`;
-
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.drawImage(currentImage, 0, 0);
 
@@ -108,42 +134,40 @@ function renderEditor() {
         drawGrid();
     }
 
-    if (selectedTile) {
+    if (selection) {
         drawSelection();
     }
 }
 
+// =========================================
+// 6. CUADRÍCULA DE REFERENCIA
+// =========================================
+
 function drawGrid() {
 
-    ctx.strokeStyle = "rgba(30, 255, 190, 0.55)";
-    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = "rgba(30, 255, 190, 0.5)";
+    ctx.lineWidth = 1;
 
     for (let x = 0; x <= canvas.width; x += tileSize) {
-
         ctx.beginPath();
         ctx.moveTo(x + 0.5, 0);
         ctx.lineTo(x + 0.5, canvas.height);
         ctx.stroke();
-
     }
 
     for (let y = 0; y <= canvas.height; y += tileSize) {
-
         ctx.beginPath();
         ctx.moveTo(0, y + 0.5);
         ctx.lineTo(canvas.width, y + 0.5);
         ctx.stroke();
-
     }
 }
 
 // =========================================
-// 5. SELECCIONAR TILE
+// 7. COORDENADAS DEL CURSOR
 // =========================================
 
-canvas.addEventListener("click", (event) => {
-
-    if (!currentImage) return;
+function getCanvasPosition(event) {
 
     const rect = canvas.getBoundingClientRect();
 
@@ -157,58 +181,226 @@ canvas.addEventListener("click", (event) => {
         (canvas.height / rect.height)
     );
 
-    const column = Math.floor(x / tileSize);
-    const row = Math.floor(y / tileSize);
+    return {
+        x: Math.max(0, Math.min(x, canvas.width - 1)),
+        y: Math.max(0, Math.min(y, canvas.height - 1))
+    };
+}
 
-    const pixelX = column * tileSize;
-    const pixelY = row * tileSize;
+// =========================================
+// 8. INICIAR SELECCIÓN
+// =========================================
 
-    if (
-        pixelX + tileSize > canvas.width ||
-        pixelY + tileSize > canvas.height
-    ) {
-        return;
-    }
+canvas.addEventListener("pointerdown", (event) => {
 
-    selectedTile = {
-        column,
-        row,
-        x: pixelX,
-        y: pixelY
+    if (!currentImage || !currentImage.naturalWidth) return;
+
+    event.preventDefault();
+
+    canvas.setPointerCapture(event.pointerId);
+
+    const position = getCanvasPosition(event);
+
+    dragging = true;
+
+    dragStart = position;
+
+    selection = {
+        x: position.x,
+        y: position.y,
+        width: 1,
+        height: 1
     };
 
-    updateSelection();
     renderEditor();
 
 });
 
 // =========================================
-// 6. ACTUALIZAR INFORMACIÓN
+// 9. ARRASTRAR SELECCIÓN
 // =========================================
 
-function updateSelection() {
+canvas.addEventListener("pointermove", (event) => {
 
-    if (!selectedTile) return;
+    if (!dragging || !dragStart) return;
+
+    const position = getCanvasPosition(event);
+
+    const x = Math.min(dragStart.x, position.x);
+    const y = Math.min(dragStart.y, position.y);
+
+    const right = Math.max(dragStart.x, position.x);
+    const bottom = Math.max(dragStart.y, position.y);
+
+    selection = {
+        x,
+        y,
+        width: right - x + 1,
+        height: bottom - y + 1
+    };
+
+    updateSelectionInfo();
+    renderEditor();
+
+});
+
+// =========================================
+// 10. FINALIZAR SELECCIÓN
+// =========================================
+
+canvas.addEventListener("pointerup", () => {
+
+    if (!dragging) return;
+
+    dragging = false;
+    dragStart = null;
+
+    updateSelectionInfo();
+    renderEditor();
+
+});
+
+// =========================================
+// 11. DIBUJAR SELECCIÓN
+// =========================================
+
+function drawSelection() {
+
+    ctx.fillStyle = "rgba(255, 220, 60, 0.25)";
+
+    ctx.fillRect(
+        selection.x,
+        selection.y,
+        selection.width,
+        selection.height
+    );
+
+    ctx.strokeStyle = "#ffe45c";
+    ctx.lineWidth = 2;
+
+    ctx.strokeRect(
+        selection.x + 1,
+        selection.y + 1,
+        Math.max(0, selection.width - 2),
+        Math.max(0, selection.height - 2)
+    );
+}
+
+// =========================================
+// 12. ACTUALIZAR INFORMACIÓN
+// =========================================
+
+function updateSelectionInfo() {
+
+    if (!selection) return;
 
     selectedStatus.textContent =
-        "Tile seleccionado correctamente";
+        "Región seleccionada";
 
-    tileColumn.textContent = selectedTile.column;
-    tileRow.textContent = selectedTile.row;
+    tileColumn.textContent =
+        Math.floor(selection.x / tileSize);
 
-    tileX.textContent = `${selectedTile.x} px`;
-    tileY.textContent = `${selectedTile.y} px`;
+    tileRow.textContent =
+        Math.floor(selection.y / tileSize);
+
+    tileX.textContent = `${selection.x} px`;
+    tileY.textContent = `${selection.y} px`;
 
     tileDimensions.textContent =
-        `${tileSize} × ${tileSize} px`;
+        `${selection.width} × ${selection.height} px`;
+
+    widthInput.value = selection.width;
+    heightInput.value = selection.height;
 
     drawPreview();
 }
 
+// =========================================
+// 13. MODIFICAR ANCHO Y ALTO
+// =========================================
+
+function resizeSelection() {
+
+    if (!selection || !currentImage) return;
+
+    const width = Math.max(
+        1,
+        Math.min(Number(widthInput.value) || 1, canvas.width - selection.x)
+    );
+
+    const height = Math.max(
+        1,
+        Math.min(Number(heightInput.value) || 1, canvas.height - selection.y)
+    );
+
+    selection.width = width;
+    selection.height = height;
+
+    updateSelectionInfo();
+    renderEditor();
+}
+
+widthInput.addEventListener("change", resizeSelection);
+heightInput.addEventListener("change", resizeSelection);
+
+// =========================================
+// 14. VISTA PREVIA
+// =========================================
+
+function drawPreview() {
+
+    if (!selection) return;
+
+    const maxPreview = 160;
+
+    const scale = Math.min(
+        maxPreview / selection.width,
+        maxPreview / selection.height
+    );
+
+    const previewWidth = Math.max(
+        1,
+        Math.round(selection.width * scale)
+    );
+
+    const previewHeight = Math.max(
+        1,
+        Math.round(selection.height * scale)
+    );
+
+    previewCanvas.width = previewWidth;
+    previewCanvas.height = previewHeight;
+
+    previewCanvas.style.width = `${previewWidth}px`;
+    previewCanvas.style.height = `${previewHeight}px`;
+
+    previewCtx.clearRect(
+        0, 0, previewWidth, previewHeight
+    );
+
+    previewCtx.drawImage(
+        currentImage,
+        selection.x,
+        selection.y,
+        selection.width,
+        selection.height,
+        0,
+        0,
+        previewWidth,
+        previewHeight
+    );
+}
+
+// =========================================
+// 15. LIMPIAR SELECCIÓN
+// =========================================
+
 function clearSelection() {
 
+    selection = null;
+
     selectedStatus.textContent =
-        "Selecciona un tile de la imagen";
+        "Arrastra sobre la imagen para seleccionar";
 
     tileColumn.textContent = "-";
     tileRow.textContent = "-";
@@ -219,63 +411,12 @@ function clearSelection() {
     previewCanvas.width = 0;
     previewCanvas.height = 0;
 
+    widthInput.value = 32;
+    heightInput.value = 32;
 }
 
 // =========================================
-// 7. RESALTAR SELECCIÓN
-// =========================================
-
-function drawSelection() {
-
-    ctx.fillStyle = "rgba(255, 220, 60, 0.3)";
-
-    ctx.fillRect(
-        selectedTile.x,
-        selectedTile.y,
-        tileSize,
-        tileSize
-    );
-
-    ctx.strokeStyle = "#ffe45c";
-    ctx.lineWidth = 2;
-
-    ctx.strokeRect(
-        selectedTile.x + 1,
-        selectedTile.y + 1,
-        tileSize - 2,
-        tileSize - 2
-    );
-}
-
-// =========================================
-// 8. VISTA PREVIA AMPLIADA
-// =========================================
-
-function drawPreview() {
-
-    previewCanvas.width = tileSize;
-    previewCanvas.height = tileSize;
-
-    previewCanvas.style.width = `${tileSize * 6}px`;
-    previewCanvas.style.height = `${tileSize * 6}px`;
-
-    previewCtx.imageSmoothingEnabled = false;
-
-    previewCtx.drawImage(
-        currentImage,
-        selectedTile.x,
-        selectedTile.y,
-        tileSize,
-        tileSize,
-        0,
-        0,
-        tileSize,
-        tileSize
-    );
-}
-
-// =========================================
-// 9. CONTROLES
+// 16. CONTROLES
 // =========================================
 
 tilesetSelect.addEventListener("change", () => {
@@ -290,9 +431,10 @@ tileSizeSelect.addEventListener("change", () => {
 
     tileSize = Number(tileSizeSelect.value);
 
-    selectedTile = null;
+    if (selection) {
+        updateSelectionInfo();
+    }
 
-    clearSelection();
     renderEditor();
 
 });
@@ -314,26 +456,24 @@ gridCheckbox.addEventListener("change", () => {
 });
 
 // =========================================
-// 10. COPIAR COORDENADAS
+// 17. COPIAR COORDENADAS
 // =========================================
 
 document.getElementById("copyCoordinates")
     .addEventListener("click", async () => {
 
-        if (!selectedTile) {
+        if (!selection) {
             selectedStatus.textContent =
-                "Primero selecciona un tile";
+                "Primero selecciona una región";
             return;
         }
 
         const information = {
             tileset: currentTileset,
-            column: selectedTile.column,
-            row: selectedTile.row,
-            x: selectedTile.x,
-            y: selectedTile.y,
-            width: tileSize,
-            height: tileSize
+            x: selection.x,
+            y: selection.y,
+            width: selection.width,
+            height: selection.height
         };
 
         try {
@@ -343,12 +483,12 @@ document.getElementById("copyCoordinates")
             );
 
             selectedStatus.textContent =
-                "¡Coordenadas copiadas!";
+                "¡Región copiada correctamente!";
 
         } catch (error) {
 
             selectedStatus.textContent =
-                "No se pudo copiar. Usa la consola.";
+                "No se pudo copiar";
 
             console.error(error);
 
@@ -357,7 +497,7 @@ document.getElementById("copyCoordinates")
     });
 
 // =========================================
-// 11. INICIAR EDITOR
+// 18. INICIAR
 // =========================================
 
 loadTileset();
