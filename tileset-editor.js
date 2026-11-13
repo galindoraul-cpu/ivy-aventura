@@ -501,3 +501,202 @@ document.getElementById("copyCoordinates")
 // =========================================
 
 loadTileset();
+
+/* =========================================
+   19. BIBLIOTECA DE SPRITES
+========================================= */
+
+const CATALOG_KEY = "ivy_sprite_catalog_v1";
+
+let assetCatalog = [];
+
+try {
+    assetCatalog = JSON.parse(
+        localStorage.getItem(CATALOG_KEY) || "[]"
+    );
+
+    if (!Array.isArray(assetCatalog)) {
+        assetCatalog = [];
+    }
+} catch (error) {
+    assetCatalog = [];
+}
+
+const assetName = document.getElementById("assetName");
+const assetCategory = document.getElementById("assetCategory");
+const assetList = document.getElementById("assetList");
+
+function saveCatalog() {
+    localStorage.setItem(
+        CATALOG_KEY,
+        JSON.stringify(assetCatalog)
+    );
+}
+
+function renderCatalog() {
+
+    assetList.replaceChildren();
+
+    if (assetCatalog.length === 0) {
+        const message = document.createElement("p");
+        message.textContent = "Todavía no hay elementos guardados.";
+        assetList.appendChild(message);
+        return;
+    }
+
+    assetCatalog.forEach((asset, index) => {
+
+        const entry = document.createElement("div");
+        entry.className = "asset-entry";
+
+        const name = document.createElement("strong");
+        name.textContent = asset.name;
+
+        const details = document.createElement("small");
+
+        details.textContent =
+            `Categoría: ${asset.category} | ` +
+            `Imagen: ${asset.tileset} | ` +
+            `Posición: ${asset.x}, ${asset.y} | ` +
+            `Tamaño: ${asset.width} × ${asset.height} px`;
+
+        const removeButton = document.createElement("button");
+        removeButton.textContent = "Eliminar del catálogo";
+
+        removeButton.addEventListener("click", () => {
+
+            assetCatalog.splice(index, 1);
+
+            saveCatalog();
+            renderCatalog();
+
+        });
+
+        entry.appendChild(name);
+        entry.appendChild(details);
+        entry.appendChild(removeButton);
+
+        assetList.appendChild(entry);
+
+    });
+}
+
+// =========================================
+// GUARDAR ELEMENTO
+// =========================================
+
+document.getElementById("saveAsset")
+    .addEventListener("click", () => {
+
+        if (!selection) {
+            alert("Primero selecciona una región del tileset.");
+            return;
+        }
+
+        const name = assetName.value.trim();
+
+        if (!name) {
+            alert("Escribe un nombre para el elemento.");
+            return;
+        }
+
+        const asset = {
+            id: Date.now(),
+            name: name,
+            category: assetCategory.value,
+            tileset: currentTileset,
+            x: selection.x,
+            y: selection.y,
+            width: selection.width,
+            height: selection.height
+        };
+
+        assetCatalog.push(asset);
+
+        saveCatalog();
+        renderCatalog();
+
+        assetName.value = "";
+
+        selectedStatus.textContent =
+            "Elemento guardado en la biblioteca.";
+
+    });
+
+// =========================================
+// DESCARGAR RECORTE COMO PNG
+// =========================================
+
+document.getElementById("downloadCrop")
+    .addEventListener("click", () => {
+
+        if (!selection) {
+            alert("Primero selecciona una región.");
+            return;
+        }
+
+        const cropCanvas = document.createElement("canvas");
+
+        cropCanvas.width = selection.width;
+        cropCanvas.height = selection.height;
+
+        const cropCtx = cropCanvas.getContext("2d");
+
+        cropCtx.imageSmoothingEnabled = false;
+
+        cropCtx.drawImage(
+            currentImage,
+            selection.x,
+            selection.y,
+            selection.width,
+            selection.height,
+            0,
+            0,
+            selection.width,
+            selection.height
+        );
+
+        const link = document.createElement("a");
+
+        const filename = assetName.value.trim()
+            .replace(/[^a-z0-9_-]/gi, "-") || "sprite";
+
+        link.download = `${filename}.png`;
+        link.href = cropCanvas.toDataURL("image/png");
+
+        link.click();
+
+    });
+
+// =========================================
+// EXPORTAR CATÁLOGO
+// =========================================
+
+document.getElementById("exportCatalog")
+    .addEventListener("click", () => {
+
+        const data = JSON.stringify(assetCatalog, null, 2);
+
+        const blob = new Blob(
+            [data],
+            { type: "application/json" }
+        );
+
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = "ivy-sprite-catalog.json";
+
+        link.click();
+
+        URL.revokeObjectURL(url);
+
+    });
+
+// =========================================
+// CARGAR CATÁLOGO EXISTENTE
+// =========================================
+
+renderCatalog();
