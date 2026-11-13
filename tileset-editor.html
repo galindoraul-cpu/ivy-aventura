@@ -135,6 +135,45 @@
                     Copiar coordenadas
                 </button>
 
+<div class="catalog-tools">
+
+    <h2>Biblioteca de sprites</h2>
+
+    <input
+        type="text"
+        id="assetName"
+        placeholder="Nombre del elemento"
+    >
+
+    <select id="assetCategory">
+        <option value="architecture">Edificios y fachadas</option>
+        <option value="roofs">Techos</option>
+        <option value="windows">Ventanas y puertas</option>
+        <option value="structures">Columnas y barandales</option>
+        <option value="stairs">Escaleras</option>
+        <option value="decoration">Decoración y vegetación</option>
+        <option value="surfaces">Pisos y superficies</option>
+        <option value="other">Otros</option>
+    </select>
+
+    <button id="saveAsset">
+        Guardar en biblioteca
+    </button>
+
+    <button id="downloadCrop">
+        Descargar selección PNG
+    </button>
+
+    <button id="exportCatalog">
+        Exportar catálogo JSON
+    </button>
+
+    <div id="assetList">
+        <p>Los elementos guardados aparecerán aquí.</p>
+    </div>
+
+</div>
+
             </aside>
 
         </section>
