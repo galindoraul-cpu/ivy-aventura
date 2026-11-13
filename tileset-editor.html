@@ -33,6 +33,7 @@
                 <select id="tilesetSelect">
                     <option value="exterior">Exterior</option>
                     <option value="general">General</option>
+                    <option value="buildings">Edificios a color</option>
                 </select>
             </div>
 
@@ -44,7 +45,17 @@
                     <option value="32">32 × 32 px</option>
                 </select>
             </div>
+<div class="control-group">
+    <label for="selectionWidth">Ancho de selección (px)</label>
+    <input type="number" id="selectionWidth"
+           value="32" min="1" max="1096">
+</div>
 
+<div class="control-group">
+    <label for="selectionHeight">Alto de selección (px)</label>
+    <input type="number" id="selectionHeight"
+           value="32" min="1" max="1090">
+</div>
             <div class="control-group">
                 <label for="zoom">Ampliación</label>
 
